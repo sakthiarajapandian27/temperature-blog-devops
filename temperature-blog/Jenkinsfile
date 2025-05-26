@@ -5,50 +5,64 @@ pipeline {
     stage('Build') {
       steps {
         echo '🔧 Building...'
-        bat 'echo Build stage completed (no build needed for Node app)'
+        dir('temperature-blog') {
+          bat 'echo Build stage completed (no build needed for Node app)'
+        }
       }
     }
 
     stage('Test') {
       steps {
         echo '🧪 Running Tests...'
-        bat 'npm install'
-        bat 'npm test'
+        dir('temperature-blog') {
+          bat 'npm install'
+          bat 'npm test'
+        }
       }
     }
 
     stage('Code Quality') {
       steps {
         echo '📊 Code Quality (placeholder)'
-        bat 'echo Run SonarQube scanner here (optional)'
+        dir('temperature-blog') {
+          bat 'echo Run SonarQube scanner here'
+        }
       }
     }
 
     stage('Security Scan') {
       steps {
         echo '🔒 Security Scan (placeholder)'
-        bat 'echo Run Trivy/Snyk scan here (optional)'
+        dir('temperature-blog') {
+          bat 'echo Run Trivy/Snyk scan here'
+        }
       }
     }
 
     stage('Deploy') {
       steps {
         echo '🚀 Deploying locally...'
-        bat 'echo Deploy step completed (placeholder)'
+        dir('temperature-blog') {
+          bat 'echo Deploy step completed'
+        }
       }
     }
 
     stage('Release') {
       steps {
         echo '📦 Tagging Release...'
-        bat 'echo git tag v1.0'
+        dir('temperature-blog') {
+          bat 'echo git tag v1.0'
+        }
       }
     }
 
     stage('Monitoring') {
       steps {
         echo '📈 Health Check...'
-        bat 'echo Run curl or monitoring tools here'
+        dir('temperature-blog') {
+          bat 'echo Run curl or monitoring tools here'
+        }
       }
     }
   }
