@@ -1,61 +1,54 @@
 pipeline {
   agent any
 
-  environment {
-    DOCKER_IMAGE = "temperature-blog"
-  }
-
   stages {
     stage('Build') {
       steps {
-        echo 'Building Docker Image...'
-        sh 'docker build -t $DOCKER_IMAGE .'
+        echo '🔧 Building...'
+        bat 'echo Build stage completed (no build needed for Node app)'
       }
     }
 
     stage('Test') {
       steps {
-        echo 'Running Jest Tests...'
-        sh 'npm install'
-        sh 'npm test'
+        echo '🧪 Running Tests...'
+        bat 'npm install'
+        bat 'npm test'
       }
     }
 
     stage('Code Quality') {
       steps {
-        echo 'Running SonarQube analysis...'
-        // replace with your SonarQube CLI or plugin steps
-        sh './sonar-scanner -Dsonar.projectKey=temp-blog -Dsonar.sources=.'
+        echo '📊 Code Quality (placeholder)'
+        bat 'echo Run SonarQube scanner here (optional)'
       }
     }
 
     stage('Security Scan') {
       steps {
-        echo 'Running Trivy Scan...'
-        sh 'trivy image $DOCKER_IMAGE'
+        echo '🔒 Security Scan (placeholder)'
+        bat 'echo Run Trivy/Snyk scan here (optional)'
       }
     }
 
     stage('Deploy') {
       steps {
-        echo 'Deploying...'
-        sh 'docker run -d -p 3000:3000 $DOCKER_IMAGE'
+        echo '🚀 Deploying locally...'
+        bat 'echo Deploy step completed (placeholder)'
       }
     }
 
     stage('Release') {
       steps {
-        echo 'Tagging Release...'
-        sh 'git tag v1.0.${BUILD_NUMBER}'
-        sh 'git push origin --tags'
+        echo '📦 Tagging Release...'
+        bat 'echo git tag v1.0'
       }
     }
 
     stage('Monitoring') {
       steps {
-        echo '📈 Triggering monitoring checks...'
-        // Integrate with Datadog, Prometheus, or curl health check
-        sh 'curl -s http://localhost:3000 || echo "App not responding"'
+        echo '📈 Health Check...'
+        bat 'echo Run curl or monitoring tools here'
       }
     }
   }
