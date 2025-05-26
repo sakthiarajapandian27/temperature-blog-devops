@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Temperature</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header><h1>Edit Temperature Entry</h1></header>
+  <main>
+    <form method="POST" action="/edit/<%= entry._id %>">
+      <input name="city" value="<%= entry.city %>" required>
+      <input name="temperature" type="number" step="0.1" value="<%= entry.temperature %>" required>
+      <button type="submit">Update</button>
+    </form>
+    <form method="POST" action="/delete/<%= entry._id %>">
+      <button style="background: red;">Delete</button>
+    </form>
+    <a href="/"><button>Cancel</button></a>
+  </main>
+</body>
+</html>

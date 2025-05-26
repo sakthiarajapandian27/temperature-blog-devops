@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>New Temperature Entry</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header><h1>+ Add Temperature Update</h1></header>
+  <main>
+    <form method="POST" action="/new">
+      <input name="city" placeholder="City name" required>
+      <input name="temperature" type="number" step="0.1" placeholder="Temperature in °C" required>
+      <button type="submit">Submit</button>
+    </form>
+  </main>
+</body>
+</html>

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temperature-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: temperature-app
+  template:
+    metadata:
+      labels:
+        app: temperature-app
+    spec:
+      containers:
+        - name: temperature-app
+          image: sakthiarajapandian/temperature-blog
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URI
+              value: "mongodb://$(MONGO_USER):$(MONGO_PASSWORD)@mongo-service:27017/blogdb?authSource=admin"
+          envFrom:
+            - secretRef:
+                name: mongo-secret

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Temperature Blog</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header><h1>Temperature Update Blog</h1></header>
+  <main>
+    <a href="/new"><button>Add New Temperature Update</button></a>
+    <% updates.forEach(u => { %>
+      <div class="update">
+        <h2><%= u.city %></h2>
+        <p><strong>Temperature:</strong> <%= u.temperature %>°C</p>
+        <p><em>Updated at: <%= new Date(u.updatedAt).toLocaleString() %></em></p>
+        <div style="margin-top: 10px;">
+          <a href="/edit/<%= u._id %>"><button>Edit</button></a>
+          <form method="POST" action="/delete/<%= u._id %>" style="display:inline;">
+            <button style="background-color: red; color: white;">Delete</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </main>
+</body>
+</html>
