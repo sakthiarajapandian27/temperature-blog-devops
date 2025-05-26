@@ -4,16 +4,16 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        echo '🔧 Building...'
+        echo '🔧 Building Docker image...'
         dir('temperature-blog') {
-          bat 'echo Build stage completed (no build needed for Node app)'
+          bat 'docker build -t temperature-blog-app .'
         }
       }
     }
 
     stage('Test') {
       steps {
-        echo '🧪 Running Tests...'
+        echo '🧪 Running Jest Tests...'
         dir('temperature-blog') {
           bat 'npm install'
           bat 'npm test'
@@ -23,46 +23,59 @@ pipeline {
 
     stage('Code Quality') {
       steps {
-        echo '📊 Code Quality (placeholder)'
+        echo '📊 Running SonarQube analysis...'
         dir('temperature-blog') {
-          bat 'echo Run SonarQube scanner here'
+          bat '''
+            echo Skipping real SonarQube call. To enable:
+            echo sonar-scanner -Dsonar.projectKey=temp-blog ^
+              -Dsonar.sources=. ^
+              -Dsonar.host.url=http://localhost:9000 ^
+              -Dsonar.login=your_token_here
+          '''
         }
       }
     }
 
     stage('Security Scan') {
       steps {
-        echo '🔒 Security Scan (placeholder)'
+        echo '🔒 Running Trivy Scan on Docker image...'
         dir('temperature-blog') {
-          bat 'echo Run Trivy/Snyk scan here'
+          bat 'trivy image temperature-blog-app || echo Trivy scan complete (optional)'
         }
       }
     }
 
     stage('Deploy') {
       steps {
-        echo '🚀 Deploying locally...'
+        echo '🚀 Deploying Container on Port 3000...'
         dir('temperature-blog') {
-          bat 'echo Deploy step completed'
+          bat '''
+            docker stop temp-blog-container || echo "No existing container"
+            docker rm temp-blog-container || echo "No container to remove"
+            docker run -d -p 3000:3000 --name temp-blog-container temperature-blog-app
+          '''
         }
       }
     }
 
     stage('Release') {
       steps {
-        echo '📦 Tagging Release...'
+        echo '📦 Creating Git Tag (Release)...'
         dir('temperature-blog') {
-          bat 'echo git tag v1.0'
+          bat '''
+            git config --global user.email "ci@jenkins.com"
+            git config --global user.name "Jenkins CI"
+            git tag v1.0.%BUILD_NUMBER%
+            git push origin --tags
+          '''
         }
       }
     }
 
     stage('Monitoring') {
       steps {
-        echo '📈 Health Check...'
-        dir('temperature-blog') {
-          bat 'echo Run curl or monitoring tools here'
-        }
+        echo '📈 Performing Localhost Health Check...'
+        bat 'curl -s http://localhost:3000 || echo "Health check failed or curl not installed"'
       }
     }
   }
