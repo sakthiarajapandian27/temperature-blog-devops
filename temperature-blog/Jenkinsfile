@@ -1,7 +1,18 @@
 pipeline {
   agent any
 
+  tools {
+    nodejs 'nodejs16' // Make sure this matches the name in Jenkins Global Tool Config
+  }
+
+  environment {
+    SONAR_PROJECT_KEY = 'temp-blog'
+    SONAR_HOST_URL = 'http://localhost:9000'
+    SONAR_TOKEN = credentials('sonar-token') // Set this credential ID in Jenkins
+  }
+
   stages {
+
     stage('Build') {
       steps {
         echo '🔧 Building Docker image...'
@@ -25,13 +36,15 @@ pipeline {
       steps {
         echo '📊 Running SonarQube analysis...'
         dir('temperature-blog') {
-          bat '''
-            echo Skipping real SonarQube call. To enable:
-            echo sonar-scanner -Dsonar.projectKey=temp-blog ^
+          withSonarQubeEnv('LocalSonar') {
+            bat """
+              sonar-scanner ^
+              -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} ^
               -Dsonar.sources=. ^
-              -Dsonar.host.url=http://localhost:9000 ^
-              -Dsonar.login=your_token_here
-          '''
+              -Dsonar.host.url=${env.SONAR_HOST_URL} ^
+              -Dsonar.login=${env.SONAR_TOKEN}
+            """
+          }
         }
       }
     }
@@ -49,11 +62,11 @@ pipeline {
       steps {
         echo '🚀 Deploying Container on Port 3000...'
         dir('temperature-blog') {
-          bat '''
+          bat """
             docker stop temp-blog-container || echo "No existing container"
             docker rm temp-blog-container || echo "No container to remove"
             docker run -d -p 3000:3000 --name temp-blog-container temperature-blog-app
-          '''
+          """
         }
       }
     }
@@ -62,12 +75,12 @@ pipeline {
       steps {
         echo '📦 Creating Git Tag (Release)...'
         dir('temperature-blog') {
-          bat '''
+          bat """
             git config --global user.email "ci@jenkins.com"
             git config --global user.name "Jenkins CI"
             git tag v1.0.%BUILD_NUMBER%
             git push origin --tags
-          '''
+          """
         }
       }
     }
@@ -77,6 +90,15 @@ pipeline {
         echo '📈 Performing Localhost Health Check...'
         bat 'curl -s http://localhost:3000 || echo "Health check failed or curl not installed"'
       }
+    }
+  }
+
+  post {
+    always {
+      echo '✅ Pipeline execution completed.'
+    }
+    failure {
+      echo '❌ Pipeline failed. Please check logs.'
     }
   }
 }
