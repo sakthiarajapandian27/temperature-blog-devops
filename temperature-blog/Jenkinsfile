@@ -2,13 +2,14 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'nodejs16' // Make sure this matches the name in Jenkins Global Tool Config
+    nodejs 'NodeJS 18' // Ensure this matches exactly with Jenkins Global Tool Config
   }
 
   environment {
-    SONAR_PROJECT_KEY = 'temp-blog'
-    SONAR_HOST_URL = 'http://localhost:9000'
-    SONAR_TOKEN = credentials('sonar-token') // Set this credential ID in Jenkins
+    SONAR_PROJECT_KEY = 'temperature-blog'
+    SONAR_ORG = 'your-sonarcloud-org'  // 🔁 Replace with your actual org key from SonarCloud
+    SONAR_HOST_URL = 'https://sonarcloud.io'
+    SONAR_TOKEN = credentials('sonar-token') // Must be set in Jenkins Credentials
   }
 
   stages {
@@ -34,15 +35,16 @@ pipeline {
 
     stage('Code Quality') {
       steps {
-        echo '📊 Running SonarQube analysis...'
+        echo '📊 Running SonarCloud Analysis...'
         dir('temperature-blog') {
-          withSonarQubeEnv('LocalSonar') {
+          withSonarQubeEnv('SonarCloud') { // Must match name in Jenkins > Configure System
             bat """
               sonar-scanner ^
-              -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} ^
+              -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
+              -Dsonar.organization=%SONAR_ORG% ^
               -Dsonar.sources=. ^
-              -Dsonar.host.url=${env.SONAR_HOST_URL} ^
-              -Dsonar.login=${env.SONAR_TOKEN}
+              -Dsonar.host.url=%SONAR_HOST_URL% ^
+              -Dsonar.login=%SONAR_TOKEN%
             """
           }
         }
@@ -51,16 +53,16 @@ pipeline {
 
     stage('Security Scan') {
       steps {
-        echo '🔒 Running Trivy Scan on Docker image...'
+        echo '🔒 Running Trivy Vulnerability Scan...'
         dir('temperature-blog') {
-          bat 'trivy image temperature-blog-app || echo Trivy scan complete (optional)'
+          bat 'trivy image temperature-blog-app || echo "⚠️ Trivy scan completed with issues or skipped."'
         }
       }
     }
 
     stage('Deploy') {
       steps {
-        echo '🚀 Deploying Container on Port 3000...'
+        echo '🚀 Deploying Docker Container on Port 3000...'
         dir('temperature-blog') {
           bat """
             docker stop temp-blog-container || echo "No existing container"
@@ -73,7 +75,7 @@ pipeline {
 
     stage('Release') {
       steps {
-        echo '📦 Creating Git Tag (Release)...'
+        echo '📦 Tagging and Pushing Release to Git...'
         dir('temperature-blog') {
           bat """
             git config --global user.email "ci@jenkins.com"
@@ -87,18 +89,18 @@ pipeline {
 
     stage('Monitoring') {
       steps {
-        echo '📈 Performing Localhost Health Check...'
-        bat 'curl -s http://localhost:3000 || echo "Health check failed or curl not installed"'
+        echo '📈 Performing Health Check on Port 3000...'
+        bat 'curl -s http://localhost:3000 || echo "⚠️ Health check failed or curl not available."'
       }
     }
   }
 
   post {
     always {
-      echo '✅ Pipeline execution completed.'
+      echo '✅ Pipeline run completed.'
     }
     failure {
-      echo '❌ Pipeline failed. Please check logs.'
+      echo '❌ Pipeline failed. Please review stage logs above.'
     }
   }
 }
