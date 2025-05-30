@@ -2,14 +2,14 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'NodeJS 18' // Ensure this matches exactly with Jenkins Global Tool Config
+    nodejs 'NodeJS 18' // Ensure this matches Jenkins > Global Tool Configuration
   }
 
   environment {
-    SONAR_PROJECT_KEY = 'temperature-blog'
-    SONAR_ORG = 'your-sonarcloud-org'  // 🔁 Replace with your actual org key from SonarCloud
+    SONAR_PROJECT_KEY = 'temperature-blog'                  // ✅ Your SonarCloud project key
+    SONAR_ORG = 'sakthiarajapandian27'                      // ✅ Your actual org name from SonarCloud
     SONAR_HOST_URL = 'https://sonarcloud.io'
-    SONAR_TOKEN = credentials('sonar-token') // Must be set in Jenkins Credentials
+    SONAR_TOKEN = credentials('sonar-token')                // ✅ Add this under Jenkins > Credentials
   }
 
   stages {
@@ -37,7 +37,7 @@ pipeline {
       steps {
         echo '📊 Running SonarCloud Analysis...'
         dir('temperature-blog') {
-          withSonarQubeEnv('SonarCloud') { // Must match name in Jenkins > Configure System
+          withSonarQubeEnv('SonarCloud') {
             bat """
               sonar-scanner ^
               -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
@@ -55,7 +55,7 @@ pipeline {
       steps {
         echo '🔒 Running Trivy Vulnerability Scan...'
         dir('temperature-blog') {
-          bat 'trivy image temperature-blog-app || echo "⚠️ Trivy scan completed with issues or skipped."'
+          bat 'trivy image temperature-blog-app || echo "⚠️ Trivy scan skipped or found issues."'
         }
       }
     }
@@ -75,7 +75,7 @@ pipeline {
 
     stage('Release') {
       steps {
-        echo '📦 Tagging and Pushing Release to Git...'
+        echo '📦 Creating Git Tag and Pushing Release...'
         dir('temperature-blog') {
           bat """
             git config --global user.email "ci@jenkins.com"
@@ -97,10 +97,10 @@ pipeline {
 
   post {
     always {
-      echo '✅ Pipeline run completed.'
+      echo '✅ Pipeline execution completed.'
     }
     failure {
-      echo '❌ Pipeline failed. Please review stage logs above.'
+      echo '❌ Pipeline failed. Please check above logs for details.'
     }
   }
 }
